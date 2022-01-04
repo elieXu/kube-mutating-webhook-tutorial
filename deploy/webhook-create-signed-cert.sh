@@ -67,7 +67,7 @@ distinguished_name = req_distinguished_name
 [ v3_req ]
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth
+extendedKeyUsage = clientAuth, serverAuth
 subjectAltName = @alt_names
 [alt_names]
 DNS.1 = ${service}
@@ -76,21 +76,20 @@ DNS.3 = ${service}.${namespace}.svc
 EOF
 
 openssl genrsa -out "${tmpdir}"/server-key.pem 2048
-openssl req -new -key "${tmpdir}"/server-key.pem -subj "/CN=${service}.${namespace}.svc" -out "${tmpdir}"/server.csr -config "${tmpdir}"/csr.conf
+openssl req -new -key "${tmpdir}"/server-key.pem -subj "/CN=system:node:${service}.${namespace}.svc /OU=system:nodes /O=system:nodes" -out "${tmpdir}"/server.csr -config "${tmpdir}"/csr.conf
 
 # clean-up any previously created CSR for our service. Ignore errors if not present.
 kubectl delete csr ${csrName} 2>/dev/null || true
 
 # create  server cert/key CSR and  send to k8s API
 cat <<EOF | kubectl create -f -
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
   name: ${csrName}
 spec:
-  groups:
-  - system:authenticated
   request: $(< "${tmpdir}"/server.csr base64 | tr -d '\n')
+  signerName: kubernetes.io/kubelet-serving
   usages:
   - digital signature
   - key encipherment

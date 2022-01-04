@@ -1,9 +1,9 @@
 FROM alpine:latest
 
 # set labels for metadata
-LABEL maintainer="Morven Cao<morvencao@gmail.com>" \
+LABEL maintainer="Elie XU<xuzhijun95@126.com>" \
   name="sidecar-injector" \
-  description="A Kubernetes mutating webhook server that implements sidecar injection" \
+  description="A Kubernetes mutating webhook server that implements sidecar injection. From https://github.com/morvencao/kube-mutating-webhook-tutorial" \
   summary="A Kubernetes mutating webhook server that implements sidecar injection"
 
 # set environment variables
